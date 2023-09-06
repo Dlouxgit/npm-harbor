@@ -10,15 +10,15 @@ import { Button, Grid, TextField } from '@mui/material';
 import { ChangeEventHandler, useEffect, useState } from 'react';
 
 export default function BasicTable() {
-  const [projectList, setProjectList] = useState<{name: string, registry: string, extraCode: string}[]>([]);
+  const [projectList, setProjectList] = useState<{name: string, repository: string, extraCode: string}[]>([]);
   const [name, setName] = useState('');
   const handleName: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (event) => {
     setName(event.target.value as string);
   };
 
-  const [registry, setRegistry] = useState('');
-  const handleRegistry: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (event) => {
-    setRegistry(event.target.value as string);
+  const [repository, setRepository] = useState('');
+  const handleRepository: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (event) => {
+    setRepository(event.target.value as string);
   };
 
   const [extraCode, setExtraCode] = useState('');
@@ -37,7 +37,7 @@ export default function BasicTable() {
   const addProject = () => {
     const req = {
       name,
-      registry,
+      repository,
       extraCode
     }
     fetch('/api/project/add', {
@@ -53,9 +53,9 @@ export default function BasicTable() {
     })
   }
 
-  const delProject = (registry: string) => {
+  const delProject = (repository: string) => {
     const req = {
-      registry,
+      repository,
     }
     fetch('/api/project/del', {
       method: 'POST',
@@ -91,11 +91,11 @@ export default function BasicTable() {
         <Grid item>
           <TextField
             margin="normal"
-            name="Registry"
-            value={registry}
-            autoComplete="Registry"
-            label="Registry"
-            onChange={handleRegistry}
+            name="Repository"
+            value={repository}
+            autoComplete="Repository"
+            label="Repository"
+            onChange={handleRepository}
           />
         </Grid>
         <Grid item>
@@ -123,7 +123,7 @@ export default function BasicTable() {
         <TableHead>
           <TableRow>
             <TableCell>Name</TableCell>
-            <TableCell>Registry</TableCell>
+            <TableCell>Repository</TableCell>
             <TableCell>Extra Code&nbsp;</TableCell>
             <TableCell>Action&nbsp;</TableCell>
           </TableRow>
@@ -137,14 +137,14 @@ export default function BasicTable() {
               <TableCell component="th" scope="row">
                 {row.name}
               </TableCell>
-              <TableCell>{row.registry}</TableCell>
+              <TableCell>{row.repository}</TableCell>
               <TableCell>{row.extraCode}</TableCell>
               <TableCell padding="checkbox">
                 <Button
                   variant="outlined"
                   sx={{ mt: 3, mb: 2 }}
                   color="error"
-                  onClick={() => delProject(row.registry)}
+                  onClick={() => delProject(row.repository)}
                 >
                   del
                 </Button>

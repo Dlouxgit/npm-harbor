@@ -8,9 +8,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const body = req.body;
 
-  const { name, registry, extraCode } = body as { name: string, registry: string, extraCode: string };
+  const { name, repository, extraCode } = body as { name: string, repository: string, extraCode: string };
   
-  addValueToProjectJson({ name, registry, extraCode })
+  addValueToProjectJson({ name, repository, extraCode })
 
   res.status(200).json('Ok');
 }

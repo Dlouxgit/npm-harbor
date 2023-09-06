@@ -27,9 +27,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const body = req.body;
 
-  const { version, registry, gitHubToken, npmToken, extraCode, branch } = body as { version: string, registry: string, gitHubToken: string, npmToken: string, extraCode: string, branch: string };
+  const { version, repository, gitHubToken, npmToken, extraCode, branch } = body as { version: string, repository: string, gitHubToken: string, npmToken: string, extraCode: string, branch: string };
   
-  release({ version, registry, id, gitHubToken, npmToken, extraCode, branch })
+  release({ version, repository, id, gitHubToken, npmToken, extraCode, branch })
 
   console.log('extraCode', extraCode)
 
@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 function release({
-  registry,
+  repository,
   version,
   id,
   gitHubToken,
@@ -45,7 +45,7 @@ function release({
   extraCode,
   branch
 }: Record<string, string | number>) {
-  const childProcess = exec(`sh ./release.sh ${registry} ${Math.random().toFixed(5)} ${version} ${gitHubToken} ${npmToken} "${extraCode}" ${branch}`);
+  const childProcess = exec(`sh ./release.sh "${repository}" "${Math.random().toFixed(5)}" "${version}" "${gitHubToken}" "${npmToken}" "${extraCode}" "${branch}"`);
 
   childProcess.stdout?.on('data', function (data) {
     if (msgCollect[id]) {

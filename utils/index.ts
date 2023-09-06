@@ -25,9 +25,9 @@ export function addValueToProjectJson(value: any): void {
     writeProjectJson(data);
 }
   
-export function deleteValueFromProjectJson(registryName: any): void {
+export function deleteValueFromProjectJson(repositoryName: any): void {
     const data = readProjectJson();
-    const newData = data.filter((entry) => entry.registry !== registryName);
+    const newData = data.filter((entry) => entry.repository !== repositoryName);
     writeProjectJson(newData);
 }
 

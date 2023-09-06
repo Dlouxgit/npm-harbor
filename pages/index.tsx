@@ -18,10 +18,10 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-interface IProject {name: string, registry: string, extraCode: string}
+interface IProject {name: string, repository: string, extraCode: string}
 
 export default function Publish() {
-  const [registry, setRegistry] = useState('');
+  const [repository, setRepository] = useState('');
   const [genMsg, setGenMsg] = useState([]);
   const [msg, setMsg] = useState([]);
   const [branch, setBranch] = useState('');
@@ -48,9 +48,9 @@ export default function Publish() {
   const [extraCode, setExtracode] = useState('');
 
 
-  const handleRegistryChange = (event: SelectChangeEvent) => {
-    setRegistry(event.target.value as string);
-    const defaultCode = projectList.find(project => project.registry === event.target.value)?.extraCode
+  const handleRepositoryChange = (event: SelectChangeEvent) => {
+    setRepository(event.target.value as string);
+    const defaultCode = projectList.find(project => project.repository === event.target.value)?.extraCode
     if (defaultCode) {
       setExtracode(defaultCode)
     }
@@ -67,7 +67,7 @@ export default function Publish() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const req = {
-      registry,
+      repository,
       version,
       // CustomVersion: data.get('CustomVersion'),
     }
@@ -92,7 +92,7 @@ export default function Publish() {
       localStorage.setItem('npmToken', npmToken)
     }
     const req = {
-      registry,
+      repository,
       version,
       gitHubToken,
       npmToken,
@@ -155,7 +155,7 @@ export default function Publish() {
       localStorage.setItem('gitHubToken', gitHubToken)
     }
     const req = {
-      registry,
+      repository,
       version,
       gitHubToken,
       npmToken,
@@ -188,7 +188,7 @@ export default function Publish() {
         >
           {
             props.list.map(v => (
-              <MenuItem key={v.registry} value={v.registry}>{v.name}</MenuItem>
+              <MenuItem key={v.repository} value={v.repository}>{v.name}</MenuItem>
             ))
           }
         </Select>
@@ -222,10 +222,10 @@ export default function Publish() {
         <Grid item xs={4}>
           {
             genBasicSelect({
-              label: 'Registry', 
+              label: 'Repository', 
               list: projectList,
-              value: registry,
-              handleChange: handleRegistryChange
+              value: repository,
+              handleChange: handleRepositoryChange
             })
           }
         </Grid>

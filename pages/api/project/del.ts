@@ -8,9 +8,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const body = req.body;
 
-  const { registry } = body as { registry: string };
+  const { repository } = body as { repository: string };
   
-  deleteValueFromProjectJson(registry)
+  deleteValueFromProjectJson(repository)
   
   res.status(200).json('Ok');
 }
