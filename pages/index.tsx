@@ -77,6 +77,8 @@ export default function Publish() {
   const handlePkgPublish = () => {
     let gitHubToken = localStorage.getItem('gitHubToken') || ''
     let npmToken = localStorage.getItem('npmToken') || ''
+    let userEmail = localStorage.getItem('userEmail') || ''
+    let userName = localStorage.getItem('userName') || ''
     if (!gitHubToken) {
       gitHubToken = prompt('请输入 githubToken') as string
       if (!gitHubToken) {
@@ -91,13 +93,32 @@ export default function Publish() {
       }
       localStorage.setItem('npmToken', npmToken)
     }
+    if (!userEmail) {
+      userEmail = prompt('请输入 github userEmail') as string
+      if (!userEmail) {
+        return 
+      }
+      localStorage.setItem('userEmail', userEmail)
+    }
+    if (!userName) {
+      userName = prompt('请输入 github userName') as string
+      if (!userName) {
+        return 
+      }
+      localStorage.setItem('userName', userName)
+    }
+    if (!repository || !version || !branch) {
+      return;
+    }
     const req = {
       repository,
       version,
       gitHubToken,
       npmToken,
       extraCode,
-      branch
+      branch,
+      userEmail,
+      userName
     }
     fetch('/api/create', {
       method: 'POST',
