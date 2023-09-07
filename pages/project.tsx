@@ -35,6 +35,9 @@ export default function BasicTable() {
   }
 
   const addProject = () => {
+    if (!name || !repository) {
+      return
+    }
     const req = {
       name,
       repository,

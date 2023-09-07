@@ -131,7 +131,7 @@ export default function Publish() {
 
       if (window.EventSource) {
         // 创建 EventSource 对象连接服务器
-        const source = new EventSource('http://localhost:3000/api/create?id=' + id);
+        const source = new EventSource('/api/create?id=' + id);
       
         // 连接成功后会触发 open 事件
         source.addEventListener('open', () => {
