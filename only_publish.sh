@@ -5,7 +5,9 @@ gitHubToken=$4
 npmToken=$5
 extraCode=$6
 branch=$7
-preRelease=$8
+userEmail=$8
+userName=$9
+preRelease=${10}
 
 git clone -b $branch https://$gitHubToken@$project "$project_$randomId"
 
@@ -25,8 +27,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo $(cat ./package.json | grep -m 1 "\"version\"" | awk -F: '{ gsub(/"/,"",$2); gsub(/,/,"",$2); print $2 }') "->"
+echo "start publish";
 
-release-it $version --preRelease=$preRelease --release-version --only-version --no-npm.publish --no-git.commit --no-git.push
+npm config set //registry.npmjs.org/:_authToken="$npmToken"; 
+npm publish;
+
+echo "publish success";
 
 rm -rf ../"$project_$randomId"

@@ -27,27 +27,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const body = req.body;
 
-  const { version, repository, gitHubToken, npmToken, extraCode, branch, userEmail, userName, preRelease, shouldPublish } = body as { version: string, repository: string, gitHubToken: string, npmToken: string, extraCode: string, branch: string, userEmail: string, userName: string, preRelease: string, shouldPublish: boolean };
+  const { 
+    repository,
+    gitHubToken,
+    npmToken,
+    extraCode,
+    branch 
+  } = body as {
+    repository: string
+    gitHubToken: string
+    npmToken: string
+    extraCode: string
+    branch: string
+  };
   
-  release({ version, repository, id, gitHubToken, npmToken, extraCode, branch, userEmail, userName, preRelease, shouldPublish: shouldPublish ? '1' : '0' })
+  release({ repository, id, gitHubToken, npmToken, extraCode, branch })
 
   res.status(200).json({ id: id++ });
 }
 
 function release({
-  repository,
-  version,
-  id,
-  gitHubToken,
-  npmToken,
-  extraCode,
-  branch,
-  userEmail,
-  userName,
-  preRelease,
-  shouldPublish
+    repository,
+    gitHubToken,
+    npmToken,
+    extraCode,
+    branch,
+    id
 }: Record<string, string | number>) {
-  const childProcess = exec(`sh ./release.sh "${repository}" "${Math.random().toFixed(5)}" "${version}" "${gitHubToken}" "${npmToken}" "${extraCode}" "${branch}" "${userEmail}" "${userName}" "${preRelease}" "${shouldPublish}"`);
+  const childProcess = exec(`sh ./only_publish.sh "${repository}" "${Math.random().toFixed(5)}" "" "${gitHubToken}" "${npmToken}" "${extraCode}" "${branch}" "" "" ""`);
 
   childProcess.stdout?.on('data', function (data) {
     if (msgCollect[id]) {
@@ -73,9 +80,9 @@ function release({
 
   childProcess.on('exit', function (code) {
     if (code === 0) {
-      console.log('操作成功');
+      console.log('发布成功');
     } else {
-      console.error('操作失败');
+      console.error('发布失败');
     }
   });
 }

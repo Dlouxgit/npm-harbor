@@ -26,6 +26,7 @@ export default function Publish() {
   const [msg, setMsg] = useState([]);
   const [branch, setBranch] = useState('');
   const [projectList, setProjectList] = useState<IProject[]>([]);
+  const [preRelease, setPreRelease] = useState('');
 
   const getProjectList = () => {
     fetch('/api/project/get', {
@@ -64,17 +65,11 @@ export default function Publish() {
     setExtracode(event.target.value as string);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const req = {
-      repository,
-      version,
-      // CustomVersion: data.get('CustomVersion'),
-    }
-    console.log(req);
+  const handlePreRelease: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (event) => {
+    setPreRelease(event.target.value as string);
   };
 
-  const handlePkgPublish = () => {
+  const handlePkgPublish = ({ shouldPublish }: { shouldPublish: boolean } = { shouldPublish: false }) => {
     let gitHubToken = localStorage.getItem('gitHubToken') || ''
     let npmToken = localStorage.getItem('npmToken') || ''
     let userEmail = localStorage.getItem('userEmail') || ''
@@ -118,7 +113,9 @@ export default function Publish() {
       extraCode,
       branch,
       userEmail,
-      userName
+      userName,
+      preRelease,
+      shouldPublish
     }
     fetch('/api/create', {
       method: 'POST',
@@ -129,40 +126,43 @@ export default function Publish() {
     }).then(async (res) => {
       const { id } = await res.json()
 
-      if (window.EventSource) {
-        // 创建 EventSource 对象连接服务器
-        const source = new EventSource('/api/create?id=' + id);
-      
-        // 连接成功后会触发 open 事件
-        source.addEventListener('open', () => {
-          console.log('Connected');
-        }, false);
-      
-        // 服务器发送信息到客户端时，如果没有 event 字段，默认会触发 message 事件
-        source.addEventListener('message', e => {
-          console.log(`data: ${e.data}`);
-        }, false);
-      
-        // 自定义 EventHandler，在收到 event 字段为 slide 的消息时触发
-        source.addEventListener('slide', e => {
-          console.log(`data: ${e.data}`, e); // => data: 7
-          setMsg(e.data.split('\\n'))
-        }, false);
-      
-        // 连接异常时会触发 error 事件并自动重连
-        source.addEventListener('error', e => {
-          // @ts-ignore
-          if (e.target.readyState === EventSource.CLOSED) {
-            console.log('Disconnected');
-            // @ts-ignore
-          } else if (e.target.readyState === EventSource.CONNECTING) {
-            console.log('Connecting...');
-          }
-        }, false);
-      } else {
-        console.error('Your browser doesn\'t support SSE');
-      }
+      makeSSE(id, '/api/create?id=')
     })
+  }
+
+  function makeSSE(id: string, url: string) {
+    if (window.EventSource) {
+      // 创建 EventSource 对象连接服务器
+      const source = new EventSource(url + id);
+    
+      // 连接成功后会触发 open 事件
+      source.addEventListener('open', () => {
+        console.log('Connected');
+      }, false);
+    
+      // 服务器发送信息到客户端时，如果没有 event 字段，默认会触发 message 事件
+      source.addEventListener('message', e => {
+        console.log(`data: ${e.data}`);
+      }, false);
+    
+      // 自定义 EventHandler，在收到 event 字段为 slide 的消息时触发
+      source.addEventListener('slide', e => {
+        setMsg(e.data.split('\\n'))
+      }, false);
+    
+      // 连接异常时会触发 error 事件并自动重连
+      source.addEventListener('error', e => {
+        // @ts-ignore
+        if (e.target.readyState === EventSource.CLOSED) {
+          console.log('Disconnected');
+          // @ts-ignore
+        } else if (e.target.readyState === EventSource.CONNECTING) {
+          console.log('Connecting...');
+        }
+      }, false);
+    } else {
+      console.error('Your browser doesn\'t support SSE');
+    }
   }
 
   const handlePkgGenerate = () => {
@@ -181,7 +181,8 @@ export default function Publish() {
       gitHubToken,
       npmToken,
       extraCode,
-      branch
+      branch,
+      preRelease
     }
     fetch('/api/generate', {
       method: 'POST',
@@ -191,9 +192,47 @@ export default function Publish() {
       body: JSON.stringify(req),
     }).then(async (res) => {
       const r = await res.json()
-      console.log('res', r)
       setGenMsg(r)
-      // setColorList(resp.keys || [])
+    })
+  }
+
+  const handlePkgOnlyPublish = () => {
+    let gitHubToken = localStorage.getItem('gitHubToken') || ''
+    let npmToken = localStorage.getItem('npmToken') || ''
+    if (!npmToken) {
+      npmToken = prompt('请输入 npmToken') as string
+      if (!npmToken) {
+        return 
+      }
+      localStorage.setItem('npmToken', npmToken)
+    }
+    if (!gitHubToken) {
+      gitHubToken = prompt('请输入 githubToken') as string
+      if (!gitHubToken) {
+        return 
+      }
+      localStorage.setItem('gitHubToken', gitHubToken)
+    }
+    if (!repository || !branch) {
+      return;
+    }
+    const req = {
+      repository,
+      gitHubToken,
+      npmToken,
+      extraCode,
+      branch,
+    }
+    fetch('/api/onlyPublish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(req),
+    }).then(async (res) => {
+      const { id } = await res.json()
+
+      makeSSE(id, '/api/onlyPublish?id=')
     })
   }
 
@@ -238,7 +277,7 @@ export default function Publish() {
   }
 
   return (
-    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }} alignItems="center">
+    <Box component="form" noValidate sx={{ mt: 1 }} alignItems="center">
       <Grid container spacing={2} justifyContent="flex-start">
         <Grid item xs={4}>
           {
@@ -280,25 +319,55 @@ export default function Publish() {
             onChange={handleExtraCode}
           />
         </Grid>
+        <Grid item>
+          <TextField
+            margin="normal"
+            name="PreRelease"
+            value={preRelease}
+            autoComplete="PreRelease"
+            label="PreRelease"
+            onChange={handlePreRelease}
+          />
+        </Grid>
       </Grid>
       <Grid container spacing={2}>
         <Grid item>
           <Button
-            type="submit"
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
             onClick={handlePkgGenerate}
           >
-            Generate
+            Check Vesion
           </Button>
         </Grid>
         <Grid item>
           <Button
             variant="contained"
+            color="warning"
             sx={{ mt: 3, mb: 2 }}
-            onClick={handlePkgPublish}
+            onClick={handlePkgOnlyPublish}
           >
-            Publish
+            Only Publish
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            variant="contained"
+            color="success"
+            sx={{ mt: 3, mb: 2 }}
+            onClick={() => handlePkgPublish({ shouldPublish: false })}
+          >
+            Version & Release
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            variant="contained"
+            color="secondary"
+            sx={{ mt: 3, mb: 2 }}
+            onClick={() => handlePkgPublish({ shouldPublish: true })}
+          >
+            All Publish
           </Button>
         </Grid>
       </Grid>

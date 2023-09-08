@@ -122,10 +122,10 @@ export default function Dashboard(props: any) {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              Dashboard
+              Npm Harbor
             </Typography>
             <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
+              <Badge badgeContent={0} color="secondary">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
